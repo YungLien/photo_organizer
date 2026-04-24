@@ -1,0 +1,470 @@
+/* Palette: Dry Sage #CCD5AE, Beige #E9EDC9, Cornsilk #FEFAE0, Papaya Whip #FAEDCD, Light Bronze #D4A373 */
+
+:root {
+  --dry-sage: #ccd5ae;
+  --beige: #e9edc9;
+  --cornsilk: #fefae0;
+  --papaya-whip: #faedcd;
+  --light-bronze: #d4a373;
+  --bronze-deep: #b8895e;
+  --text: #3c3833;
+  --text-muted: #6b6458;
+  --border: rgba(204, 213, 174, 0.85);
+  --border-strong: #bfc9a0;
+  --card: #fffefb;
+  --card-inner: #f7f4ee;
+  --shadow: rgba(60, 56, 51, 0.07);
+  --shadow-deep: rgba(60, 56, 51, 0.12);
+  --ok: #8a9a6d;
+  --warn: #c4946a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  background: linear-gradient(165deg, var(--cornsilk) 0%, var(--beige) 48%, var(--papaya-whip) 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+.top {
+  padding: 1.5rem 1.25rem 1.35rem;
+  border-bottom: 1px solid var(--border-strong);
+  position: sticky;
+  top: 0;
+  background: rgba(254, 250, 224, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.top h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.sub {
+  margin: 0 0 0.85rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+.sub.tagline {
+  font-size: 0.9375rem;
+  max-width: 28rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Extra space before buttons when there is no .scan-meta line (main review page). */
+.top:not(:has(#scanLine)) .tagline {
+  margin-bottom: 1rem;
+}
+
+.sub.scan-meta {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+  justify-content: center;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  max-width: 36rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.hint code,
+.sub code {
+  font-size: 0.85em;
+  background: var(--papaya-whip);
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 1px 2px var(--shadow);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+button:hover {
+  box-shadow: 0 2px 8px var(--shadow-deep);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.primary {
+  border-color: var(--border-strong);
+  background: var(--dry-sage);
+  color: var(--text);
+}
+
+button.primary:hover {
+  background: #c2cc9f;
+}
+
+button.danger {
+  border-color: var(--bronze-deep);
+  background: var(--light-bronze);
+  color: #fffef9;
+}
+
+button.danger:hover {
+  background: var(--bronze-deep);
+}
+
+main {
+  padding: 1.25rem 1.5rem 3.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 1.75rem 0 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.section-title:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.group {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem 1.15rem;
+  margin: 0 auto 1.1rem;
+  box-shadow: 0 4px 24px var(--shadow);
+  text-align: center;
+  max-width: 100%;
+}
+
+.group-head {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 0.85rem;
+  font-weight: 500;
+}
+
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: center;
+}
+
+.tile {
+  width: 200px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card-inner);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.tile.has-thumb img {
+  cursor: zoom-in;
+}
+
+.tile img {
+  display: block;
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  background: #f2efe8;
+}
+
+.tile.nonimg {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.6rem;
+  text-align: center;
+}
+
+.tile footer {
+  padding: 0.45rem 0.55rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  word-break: break-all;
+  border-top: 1px solid var(--border);
+  background: rgba(254, 250, 224, 0.35);
+}
+
+.tile label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 254, 251, 0.8);
+  color: var(--text);
+}
+
+.tile input[type="checkbox"] {
+  accent-color: var(--light-bronze);
+}
+
+.toast {
+  position: fixed;
+  bottom: 1.35rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.7rem 1.25rem;
+  border-radius: 999px;
+  background: var(--papaya-whip);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-size: 0.875rem;
+  z-index: 400;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px var(--shadow-deep);
+}
+
+.toast.ok {
+  border-color: var(--ok);
+  background: #f4f7ec;
+}
+
+.toast.err {
+  border-color: var(--warn);
+  background: #fdf6ee;
+}
+
+kbd {
+  font: inherit;
+  font-size: 0.72em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  background: var(--cornsilk);
+  color: var(--text-muted);
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.lightbox[hidden] {
+  display: none !important;
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(60, 56, 51, 0.5);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.lightbox-panel {
+  position: relative;
+  z-index: 1;
+  max-width: min(96vw, 1400px);
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: var(--cornsilk);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(60, 56, 51, 0.18);
+  overflow: hidden;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 3;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  font-size: 1.4rem;
+  line-height: 1;
+  border-radius: 999px;
+  background: var(--papaya-whip);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 2.6rem;
+  height: 3.6rem;
+  padding: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+  border-radius: 12px;
+  background: var(--papaya-whip);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+}
+
+.lightbox-nav:hover {
+  background: var(--dry-sage);
+}
+
+.lightbox-prev {
+  left: 0.5rem;
+}
+
+.lightbox-next {
+  right: 0.5rem;
+}
+
+.lightbox-nav[hidden] {
+  display: none;
+}
+
+.lightbox-img-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #ebe6dc;
+  padding: 2.5rem 0.75rem 0.5rem;
+  touch-action: none;
+}
+
+.lightbox-lb-stage {
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.lightbox-lb-stage img {
+  display: block;
+  max-width: min(90vw, 1200px);
+  max-height: min(62vh, 960px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 24px var(--shadow-deep);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Fixed to overlay bottom-right so zoom never overlaps the photo panel. */
+.lightbox-zoom-fab {
+  position: absolute;
+  z-index: 5;
+  right: max(0.85rem, env(safe-area-inset-right, 0px));
+  bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(254, 250, 224, 0.96);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 6px 24px rgba(60, 56, 51, 0.2);
+  pointer-events: auto;
+}
+
+.lightbox-zoom-btn {
+  min-width: 2.25rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 10px;
+}
+
+.lightbox-bar {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1.1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  background: var(--cornsilk);
+}
+
+.lightbox-caption {
+  color: var(--text-muted);
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+}
+
+.lightbox-trash-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.lightbox-trash-label input {
+  accent-color: var(--light-bronze);
+}

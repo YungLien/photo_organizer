@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photo-organizer"
+version = "0.1.0"
+description = "Organize photos/videos by date and review duplicates"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "Pillow>=10.0.0",
+    "pillow-heif>=0.16.0",
+    "ImageHash>=4.3.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "send2trash>=1.8.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "ruff>=0.4.0"]
+
+[project.scripts]
+photo-organizer = "photo_organizer.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+photo_organizer = ["review_static/*"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

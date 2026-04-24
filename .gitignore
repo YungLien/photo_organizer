@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Local import folder (your own media — never commit)
+photos/
+
+# Project outputs (track empty dirs with .gitkeep only)
+Organized/*
+!Organized/.gitkeep
+Reports/*
+!Reports/.gitkeep
+Quarantine/*
+!Quarantine/.gitkeep
+
+# macOS
+.DS_Store

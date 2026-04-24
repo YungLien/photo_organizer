@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Photo Organizer — Review</title>
+    <link rel="stylesheet" href="/static/review.css" />
+  </head>
+  <body>
+    <header class="top">
+      <h1>Photo Organizer</h1>
+      <p class="sub tagline">Unchecked keeps a file. Check items to remove, then use Move to Trash.</p>
+      <div class="actions">
+        <button type="button" id="btnFinishNoDelete" class="primary">Done</button>
+        <button type="button" id="btnDelete" class="danger">Move to Trash</button>
+      </div>
+    </header>
+    <main id="main"></main>
+    <div id="lightbox" class="lightbox" hidden aria-modal="true" role="dialog" aria-label="Enlarged photo">
+      <div class="lightbox-backdrop" tabindex="-1"></div>
+      <div class="lightbox-panel">
+        <button type="button" class="lightbox-close" aria-label="Close">×</button>
+        <button type="button" class="lightbox-nav lightbox-prev" aria-label="Previous in group">‹</button>
+        <button type="button" class="lightbox-nav lightbox-next" aria-label="Next in group">›</button>
+        <div id="lightboxImgWrap" class="lightbox-img-wrap">
+          <div id="lbStage" class="lightbox-lb-stage">
+            <img id="lightboxImg" alt="" draggable="false" />
+          </div>
+        </div>
+        <div class="lightbox-bar">
+          <span id="lightboxCaption" class="lightbox-caption"></span>
+          <label class="lightbox-trash-label">
+            <input type="checkbox" id="lightboxTrash" />
+            Move to Trash
+          </label>
+        </div>
+      </div>
+      <div class="lightbox-zoom-fab" role="toolbar" aria-label="Zoom">
+        <button type="button" class="lightbox-zoom-btn" id="lbZoomOut" aria-label="Zoom out">−</button>
+        <button type="button" class="lightbox-zoom-btn" id="lbZoomIn" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+    <div id="toast" class="toast" hidden></div>
+    <script src="/static/review.js"></script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Photo Organizer</title>
+    <link rel="stylesheet" href="/static/review.css" />
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body class="dash-body">
+    <div class="dash-bg" aria-hidden="true">
+      <div class="dash-bg__mesh"></div>
+      <div class="dash-bg__orb dash-bg__orb--1"></div>
+      <div class="dash-bg__orb dash-bg__orb--2"></div>
+    </div>
+
+    <header class="top dash-top dash-reveal dash-reveal--1">
+      <p class="dash-eyebrow">Local import · Nothing leaves this Mac</p>
+      <h1>Photo Organizer</h1>
+      <p class="sub tagline dash-tagline">Pick a folder, then start import.</p>
+    </header>
+
+    <main class="dash-main">
+      <form id="pipelineForm" class="dash-card dash-reveal dash-reveal--2">
+        <ol class="dash-flow" aria-label="Steps">
+          <li class="dash-flow__step"><span class="dash-flow__n">1</span> Folder</li>
+          <li class="dash-flow__step" aria-hidden="true"><span class="dash-flow__dot"></span></li>
+          <li class="dash-flow__step"><span class="dash-flow__n">2</span> Organize</li>
+          <li class="dash-flow__step" aria-hidden="true"><span class="dash-flow__dot"></span></li>
+          <li class="dash-flow__step"><span class="dash-flow__n">3</span> Review</li>
+        </ol>
+
+        <label class="dash-label" for="inputDir">Import folder</label>
+        <div class="dash-input-row">
+          <input
+            id="inputDir"
+            name="inputDir"
+            type="text"
+            class="dash-input"
+            value="photos"
+            placeholder="Path or folder name (e.g. photos)"
+            autocomplete="off"
+            required
+          />
+          <button type="button" class="dash-browse" id="btnBrowseInput">Browse</button>
+        </div>
+
+        <button type="submit" id="btnStart" class="primary dash-start"><span class="dash-start__label">Start import</span></button>
+        <p id="dashStatus" class="dash-status" aria-live="polite"></p>
+      </form>
+    </main>
+    <script src="/static/dashboard.js"></script>
+  </body>
+</html>

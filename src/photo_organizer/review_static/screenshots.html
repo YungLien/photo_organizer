@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Photo Organizer — Screenshot review</title>
+    <link rel="stylesheet" href="/static/review.css" />
+  </head>
+  <body>
+    <header class="top">
+      <h1>Welcome to Photo Organizer</h1>
+      <p class="sub tagline">Below are screenshots we detected.</p>
+      <p class="sub scan-meta" id="scanLine"></p>
+      <div class="actions">
+        <button type="button" id="btnApply" class="danger">Move to Trash</button>
+      </div>
+      <p class="hint">Checked items go to the <strong>macOS Trash</strong>. Leave unchecked to keep.</p>
+    </header>
+    <main id="main"></main>
+    <div id="toast" class="toast" hidden></div>
+    <script src="/static/screenshots.js"></script>
+  </body>
+</html>

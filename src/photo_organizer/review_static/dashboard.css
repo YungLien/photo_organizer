@@ -1,0 +1,435 @@
+/* Dashboard-only layout (palette from review.css :root) */
+
+@keyframes dash-mesh-shift {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(8deg) scale(1.06);
+  }
+}
+
+@keyframes dash-orb-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate(12px, -18px) scale(1.08);
+    opacity: 0.62;
+  }
+}
+
+@keyframes dash-orb-float-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(-16px, 10px) scale(1.05);
+    opacity: 0.55;
+  }
+}
+
+@keyframes dash-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dash-step-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(204, 213, 174, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(204, 213, 174, 0);
+  }
+}
+
+body.dash-body {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* Softer base so animated mesh reads clearly (overrides review.css body gradient on this page). */
+  background: var(--cornsilk);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.25rem 2rem;
+  box-sizing: border-box;
+}
+
+/* Landing layout: center title + card as a block (review.css .top is sticky + bar — not wanted here). */
+body.dash-body > header.top.dash-top {
+  position: relative;
+  top: auto;
+  z-index: 1;
+  width: 100%;
+  max-width: 32rem;
+  border-bottom: none;
+  box-shadow: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0 0 1.25rem;
+  flex-shrink: 0;
+}
+
+body.dash-body > header.top.dash-top .sub.tagline {
+  margin-bottom: 0;
+}
+
+.dash-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dash-bg__mesh {
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(ellipse 55% 45% at 20% 20%, rgba(204, 213, 174, 0.35), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 75%, rgba(250, 237, 205, 0.5), transparent 50%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(233, 237, 201, 0.4), transparent 45%);
+  animation: dash-mesh-shift 22s ease-in-out infinite alternate;
+}
+
+.dash-bg__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+}
+
+.dash-bg__orb--1 {
+  width: min(52vw, 420px);
+  height: min(52vw, 420px);
+  top: -8%;
+  right: -12%;
+  background: rgba(212, 163, 115, 0.22);
+  animation: dash-orb-float 14s ease-in-out infinite;
+}
+
+.dash-bg__orb--2 {
+  width: min(48vw, 380px);
+  height: min(48vw, 380px);
+  bottom: -5%;
+  left: -18%;
+  background: rgba(204, 213, 174, 0.28);
+  animation: dash-orb-float-2 18s ease-in-out infinite;
+}
+
+@media (max-height: 520px) {
+  body.dash-body {
+    justify-content: flex-start;
+    padding-top: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-bg__mesh,
+  .dash-bg__orb--1,
+  .dash-bg__orb--2,
+  .dash-reveal,
+  .dash-flow__step .dash-flow__n {
+    animation: none !important;
+  }
+
+  .dash-reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .dash-card:hover {
+    transform: none;
+  }
+
+  .dash-start:not(:disabled):hover,
+  .dash-start:not(:disabled):active {
+    transform: none;
+  }
+}
+
+.dash-reveal {
+  opacity: 0;
+  animation: dash-reveal-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.dash-reveal--1 {
+  animation-delay: 0.05s;
+}
+
+.dash-reveal--2 {
+  animation-delay: 0.18s;
+}
+
+.dash-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.dash-tagline {
+  max-width: 26rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dash-top {
+  margin-bottom: 0;
+}
+
+.dash-main {
+  width: 100%;
+  max-width: 32rem;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.dash-card {
+  position: relative;
+  background: rgba(255, 254, 251, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.35rem 1.25rem;
+  box-shadow: 0 4px 28px var(--shadow), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+  text-align: left;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+
+.dash-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px var(--shadow-deep), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+}
+
+.dash-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin: 0 0 1.15rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.dash-flow__step {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.dash-flow__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  background: var(--dry-sage);
+  color: var(--text);
+  animation: dash-step-pulse 3.2s ease-in-out infinite;
+}
+
+.dash-flow__step:nth-child(3) .dash-flow__n {
+  animation-delay: 0.4s;
+}
+
+.dash-flow__step:nth-child(5) .dash-flow__n {
+  animation-delay: 0.8s;
+}
+
+.dash-flow__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  opacity: 0.65;
+}
+
+.dash-flow__step[aria-hidden="true"] {
+  flex: 0 0 auto;
+}
+
+.dash-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+  margin-top: 1rem;
+}
+
+.dash-label:first-of-type {
+  margin-top: 0;
+}
+
+.dash-input-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.dash-input-row .dash-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-input {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: #fffefb;
+  color: var(--text);
+}
+
+.dash-browse {
+  flex-shrink: 0;
+  align-self: stretch;
+  padding: 0.5rem 0.85rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.dash-browse:hover {
+  background: #fffefb;
+  border-color: var(--dry-sage);
+}
+
+.dash-browse:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.dash-input:focus {
+  outline: 2px solid var(--dry-sage);
+  outline-offset: 1px;
+}
+
+.dash-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.dash-warn {
+  margin: 0.85rem 0 0;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text);
+  background: rgba(250, 237, 205, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.dash-fieldset {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin: 1.1rem 0 0;
+}
+
+.dash-fieldset legend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 0.35rem;
+}
+
+.dash-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin: 0.45rem 0;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.dash-check input {
+  accent-color: var(--light-bronze);
+}
+
+.dash-start {
+  margin-top: 1.25rem;
+  width: 100%;
+  justify-content: center;
+  font-size: 1rem;
+  padding: 0.62rem 1.2rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.dash-start:not(:disabled):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 6px 20px rgba(60, 56, 51, 0.12);
+}
+
+.dash-start:not(:disabled):active {
+  transform: translateY(0) scale(0.99);
+}
+
+.dash-start__label {
+  display: inline-block;
+}
+
+.dash-start:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.dash-status {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  min-height: 1.25em;
+}
+
+.dash-status.err {
+  color: #8b4513;
+}
+
+.dash-status.ok {
+  color: var(--ok);
+}
