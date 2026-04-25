@@ -192,10 +192,20 @@ def run_pipeline_sync(
             "duplicates",
             "Scanning for duplicates (this can take a while on large folders)…",
         )
+    # Slightly looser perceptual thresholds for the web pipeline (CLI defaults stay in duplicates.py).
+    sim_kw: dict = {}
+    if body.include_similar_duplicates:
+        sim_kw = {
+            "similar_max_hamming": 16,
+            "similar_ahash_max_hamming": 20,
+            "similar_phash_tight": 9,
+            "similar_ahash_loose": 30,
+        }
     r = scan_duplicates(
         dup_input,
         do_exact=True,
         do_similar=body.include_similar_duplicates,
+        **sim_kw,
     )
     if on_progress:
         on_progress("writing", "Writing report…")
@@ -256,7 +266,7 @@ def create_serve_app(project_root: Path) -> FastAPI:
         if platform.system() != "Darwin":
             raise HTTPException(
                 501,
-                "Native folder picker runs only on macOS. Type the path, or use scripts/Photo Organizer Picker.command.",
+                "Native folder picker runs only on macOS. Type the import path in the dashboard, or use Browse there.",
             )
         prompts = {
             "input": "Choose the folder that contains your incoming photos",

@@ -166,21 +166,33 @@ def _append_trash_audit_jsonl(log_path: Path, rows: list[dict[str, str]]) -> Non
             f.write(line + "\n")
 
 
-def _collect_allowed_paths(data: dict) -> set[str]:
+def _review_groups_images_only(groups: list[list[str]]) -> list[list[str]]:
+    """
+    Review UI is photo-focused: keep only image paths in each cluster; drop groups with <2 images.
+    (Similar scan is already image-only; exact SHA groups often include .mov — user skips those here.)
+    """
+    out: list[list[str]] = []
+    for paths in groups:
+        imgs = [p for p in paths if is_image_file(Path(p))]
+        if len(imgs) >= 2:
+            out.append(sorted(imgs, key=lambda p: p.lower()))
+    return out
+
+
+def _allowed_from_groups(similar: list[list[str]], exact: list[list[str]]) -> set[str]:
     allowed: set[str] = set()
-    for key in ("similar_groups", "exact_duplicate_groups"):
-        for g in data.get(key, []):
-            for p in g.get("paths", []):
-                k = _path_key_str(p)
-                if k:
-                    allowed.add(k)
+    for paths in similar + exact:
+        for p in paths:
+            k = _path_key_str(p)
+            if k:
+                allowed.add(k)
     return allowed
 
 
 def _groups_paths(data: dict) -> tuple[list[list[str]], list[list[str]]]:
     similar = [list(g.get("paths", [])) for g in data.get("similar_groups", [])]
     exact = [list(g.get("paths", [])) for g in data.get("exact_duplicate_groups", [])]
-    return similar, exact
+    return _review_groups_images_only(similar), _review_groups_images_only(exact)
 
 
 def _display_names_for_paths(paths: list[str]) -> list[str]:
@@ -277,8 +289,8 @@ class ReviewContext:
             return
         raw = json.loads(path.read_text(encoding="utf-8"))
         self.report_path = path
-        self.allowed = _collect_allowed_paths(raw)
         self.similar_paths, self.exact_paths = _groups_paths(raw)
+        self.allowed = _allowed_from_groups(self.similar_paths, self.exact_paths)
 
 
 def mount_review_routes(

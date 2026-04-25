@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=/dev/null
+source "$HERE/../Resources/common.sh"
+
+photo_organizer_resolve_repo
+photo_organizer_ensure_server
+open "$(photo_organizer_base_url)/"
+exit 0
