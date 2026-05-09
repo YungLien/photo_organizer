@@ -88,7 +88,7 @@ class DuplicateScanResult:
     generated_at: str
     exact_groups: list[ExactDuplicateGroup] = field(default_factory=list)
     similar_groups: list[SimilarGroup] = field(default_factory=list)
-    similar_max_hamming: int = 14
+    similar_max_hamming: int = 18
     similar_ahash_max_hamming: int = 18
     similar_serial_max_gap: int = 0
     similar_serial_max_hamming: int = 16
@@ -98,6 +98,10 @@ class DuplicateScanResult:
     similar_ahash_loose: int = 28
     similar_excluded_screenshots: int = 0
     similar_skipped: list[dict[str, str]] = field(default_factory=list)
+    similar_wide_max_hamming: int = 24
+    similar_wide_ahash_max_hamming: int = 18
+    similar_absorb_max_hamming: int = 32
+    similar_absorb_ahash_max_hamming: int = 22
 
 
 def find_exact_duplicates(paths: list[Path]) -> list[ExactDuplicateGroup]:
@@ -289,6 +293,97 @@ def find_similar_groups(
     return groups, skipped
 
 
+def _absorb_serial_neighbors(
+    similar_groups: list[SimilarGroup],
+    ungrouped: list[Path],
+    *,
+    serial_max_gap: int,
+    max_phash: int,
+    max_ahash: int,
+) -> None:
+    """In-place: absorb ungrouped files into existing groups via serial filename proximity.
+
+    Computes hashes for ungrouped files and their grouped serial neighbors, then adds
+    each ungrouped file to a group when a serial neighbor (consecutive filename number
+    within serial_max_gap) matches within (max_phash AND max_ahash).  Iterates until
+    convergence so that newly absorbed files can in turn pull in further neighbors.
+    """
+    if not ungrouped or serial_max_gap <= 0 or max_phash <= 0:
+        return
+
+    path_to_gi: dict[str, int] = {p: i for i, g in enumerate(similar_groups) for p in g.paths}
+    ungrouped_set: set[str] = {str(p) for p in ungrouped}
+
+    # Build serial metadata for grouped files (prefix, serial number)
+    group_serial: list[list[tuple[str, str, int]]] = []  # per group: [(path, prefix, serial)]
+    for g in similar_groups:
+        meta = []
+        for p_str in g.paths:
+            sinfo = _stem_prefix_and_serial(Path(p_str))
+            if sinfo is not None:
+                meta.append((p_str, sinfo[0], sinfo[1]))
+        group_serial.append(meta)
+
+    # Compute hashes for ungrouped files and cache
+    hash_cache: dict[str, tuple[imagehash.ImageHash, imagehash.ImageHash]] = {}
+
+    def _hash(p: Path) -> tuple[imagehash.ImageHash, imagehash.ImageHash] | None:
+        key = str(p)
+        if key in hash_cache:
+            return hash_cache[key]
+        try:
+            with Image.open(p) as img:
+                img = ImageOps.exif_transpose(img).convert("RGB")
+                img = _normalize_for_hash(img)
+                hp = imagehash.phash(img)
+                ha = imagehash.average_hash(img)
+        except Exception:
+            return None
+        hash_cache[key] = (hp, ha)
+        return hp, ha
+
+    # Pre-warm hashes for ungrouped files
+    ungrouped_items: list[tuple[str, str, int]] = []  # (path_str, prefix, serial)
+    for p in ungrouped:
+        sinfo = _stem_prefix_and_serial(p)
+        if sinfo is None:
+            continue
+        if _hash(p) is None:
+            continue
+        ungrouped_items.append((str(p), sinfo[0], sinfo[1]))
+
+    changed = True
+    while changed:
+        changed = False
+        remaining = [(p_str, pfx, ser) for p_str, pfx, ser in ungrouped_items if p_str in ungrouped_set]
+        for up_str, u_pfx, u_ser in remaining:
+            uh = hash_cache.get(up_str)
+            if uh is None:
+                continue
+            uhp, uha = uh
+            found_gi = None
+            for gi, gmeta in enumerate(group_serial):
+                for gp_str, g_pfx, g_ser in gmeta:
+                    if g_pfx != u_pfx or abs(u_ser - g_ser) > serial_max_gap:
+                        continue
+                    gh = _hash(Path(gp_str))
+                    if gh is None:
+                        continue
+                    ghp, gha = gh
+                    if (uhp - ghp) <= max_phash and (uha - gha) <= max_ahash:
+                        found_gi = gi
+                        break
+                if found_gi is not None:
+                    break
+            if found_gi is not None:
+                similar_groups[found_gi].paths.append(up_str)
+                similar_groups[found_gi].paths.sort()
+                path_to_gi[up_str] = found_gi
+                group_serial[found_gi].append((up_str, u_pfx, u_ser))
+                ungrouped_set.discard(up_str)
+                changed = True
+
+
 def filter_similar_against_exact(
     similar: list[SimilarGroup],
     exact: list[ExactDuplicateGroup],
@@ -318,7 +413,7 @@ def scan_duplicates(
     *,
     do_exact: bool = True,
     do_similar: bool = True,
-    similar_max_hamming: int = 14,
+    similar_max_hamming: int = 18,
     similar_ahash_max_hamming: int = 18,
     similar_serial_max_gap: int = 0,
     similar_serial_max_hamming: int = 16,
@@ -327,6 +422,10 @@ def scan_duplicates(
     similar_phash_tight: int = 10,
     similar_ahash_loose: int = 28,
     similar_include_screenshots: bool = False,
+    similar_wide_max_hamming: int = 24,
+    similar_wide_ahash_max_hamming: int = 18,
+    similar_absorb_max_hamming: int = 32,
+    similar_absorb_ahash_max_hamming: int = 22,
 ) -> DuplicateScanResult:
     input_dir = input_dir.resolve()
     paths = _iter_media_paths(input_dir)
@@ -342,6 +441,10 @@ def scan_duplicates(
         similar_match_mode=similar_match_mode,
         similar_phash_tight=similar_phash_tight,
         similar_ahash_loose=similar_ahash_loose,
+        similar_wide_max_hamming=similar_wide_max_hamming,
+        similar_wide_ahash_max_hamming=similar_wide_ahash_max_hamming,
+        similar_absorb_max_hamming=similar_absorb_max_hamming,
+        similar_absorb_ahash_max_hamming=similar_absorb_ahash_max_hamming,
     )
     if do_exact:
         result.exact_groups = find_exact_duplicates(paths)
@@ -370,6 +473,43 @@ def scan_duplicates(
         )
         result.similar_groups = filter_similar_against_exact(sim, result.exact_groups)
         result.similar_skipped = skipped
+
+        # Second pass: run wider thresholds on files not yet in any group.
+        # This catches near-miss pairs (e.g. pHash 15-24) without transitively
+        # chain-merging them into the tight groups found above.
+        if similar_wide_max_hamming > similar_max_hamming:
+            grouped: set[str] = {p for g in result.exact_groups for p in g.paths}
+            grouped |= {p for g in result.similar_groups for p in g.paths}
+            ungrouped = [p for p in image_paths if str(p) not in grouped]
+            if len(ungrouped) >= 2:
+                wide_sim, wide_skipped = find_similar_groups(
+                    ungrouped,
+                    max_hamming_phash=similar_wide_max_hamming,
+                    max_hamming_ahash=similar_wide_ahash_max_hamming,
+                    match_mode=similar_match_mode,
+                    phash_tight=similar_phash_tight,
+                    ahash_loose=similar_ahash_loose,
+                )
+                result.similar_groups.extend(
+                    filter_similar_against_exact(wide_sim, result.exact_groups)
+                )
+                result.similar_skipped.extend(wide_skipped)
+
+        # Serial absorption: ungrouped files can join an adjacent group when
+        # a consecutive-filename neighbor in that group is within the wider thresholds.
+        # This handles burst shots where the subject moved too much for global matching
+        # but the files are clearly part of the same sequence.
+        if similar_absorb_max_hamming > 0:
+            grouped_after = {p for g in result.exact_groups for p in g.paths}
+            grouped_after |= {p for g in result.similar_groups for p in g.paths}
+            still_ungrouped = [p for p in image_paths if str(p) not in grouped_after]
+            _absorb_serial_neighbors(
+                result.similar_groups,
+                still_ungrouped,
+                serial_max_gap=1,
+                max_phash=similar_absorb_max_hamming,
+                max_ahash=similar_absorb_ahash_max_hamming,
+            )
     return result
 
 
@@ -385,6 +525,10 @@ def result_to_json_dict(r: DuplicateScanResult) -> dict:
         "similar_match_mode": r.similar_match_mode,
         "similar_phash_tight": r.similar_phash_tight,
         "similar_ahash_loose": r.similar_ahash_loose,
+        "similar_wide_max_hamming": r.similar_wide_max_hamming,
+        "similar_wide_ahash_max_hamming": r.similar_wide_ahash_max_hamming,
+        "similar_absorb_max_hamming": r.similar_absorb_max_hamming,
+        "similar_absorb_ahash_max_hamming": r.similar_absorb_ahash_max_hamming,
         "similar_excluded_screenshots": r.similar_excluded_screenshots,
         "exact_duplicate_groups": [asdict(g) for g in r.exact_groups],
         "similar_groups": [asdict(g) for g in r.similar_groups],
