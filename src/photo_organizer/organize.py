@@ -11,6 +11,8 @@ from photo_organizer.metadata import capture_datetime, is_media_file
 
 @dataclass
 class OrganizeResult:
+    """Counters and file-plan produced by a single organize() run."""
+
     copied: int = 0
     skipped: int = 0
     unknown_date: int = 0
@@ -19,6 +21,7 @@ class OrganizeResult:
 
 
 def _unique_dest(dest: Path) -> Path:
+    """Return dest unchanged if it is free, else append _2, _3, ... until a free name is found."""
     if not dest.exists():
         return dest
     stem, suf = dest.stem, dest.suffix
@@ -32,6 +35,7 @@ def _unique_dest(dest: Path) -> Path:
 
 
 def _iter_files(root: Path) -> list[Path]:
+    """Recursively list all non-hidden files under root, sorted for determinism."""
     if not root.is_dir():
         return []
     out: list[Path] = []

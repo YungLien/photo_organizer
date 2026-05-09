@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 def main() -> None:
+    """Parse CLI arguments and dispatch to the appropriate subcommand handler."""
     parser = argparse.ArgumentParser(
         description="Organize photos/videos by capture date and find duplicates.",
     )

@@ -30,6 +30,8 @@ _STATIC_DIR = Path(__file__).resolve().parent / "review_static"
 
 
 class PipelineBody(BaseModel):
+    """Request body for POST /api/pipeline — controls which pipeline stages to run and where."""
+
     input_dir: str = Field(..., description="Folder of photos to process (absolute or relative to project root)")
     organized_root: str = Field(
         default="~/Desktop/Organized",
@@ -50,12 +52,14 @@ class PipelineBody(BaseModel):
     @field_validator("input_dir", "organized_root", mode="before")
     @classmethod
     def strip_str(cls, v: object) -> object:
+        """Strip leading/trailing whitespace from path fields before validation."""
         if isinstance(v, str):
             return v.strip()
         return v
 
 
 def _resolve_path(project_root: Path, p: str) -> Path:
+    """Resolve p to an absolute Path, treating relative paths as relative to project_root."""
     raw = Path(p).expanduser()
     if raw.is_absolute():
         return raw.resolve()
@@ -95,6 +99,8 @@ end try"""
 
 
 class PickFolderBody(BaseModel):
+    """Request body for POST /api/pick-folder — specifies which path field to populate."""
+
     target: Literal["input", "organized"] = "input"
 
 
@@ -207,6 +213,8 @@ def run_pipeline_sync(
 
 @dataclass
 class _PipelineJob:
+    """In-memory state for a single background pipeline run, keyed by UUID."""
+
     id: str
     body_dict: dict
     phase: str = "queued"
@@ -221,6 +229,7 @@ _jobs_lock = threading.Lock()
 
 
 def _prune_jobs() -> None:
+    """Evict completed/failed jobs older than one hour, capping the job map at 40 entries."""
     now = time.time()
     with _jobs_lock:
         dead = [k for k, j in _jobs.items() if now - j.created_at > 3600 and j.phase in ("complete", "failed")]
@@ -232,6 +241,7 @@ def _prune_jobs() -> None:
 
 
 def create_serve_app(project_root: Path) -> FastAPI:
+    """Build the unified FastAPI app with dashboard, pipeline, and duplicate-review routes."""
     project_root = project_root.resolve()
     ctx = ReviewContext()
     # Do not preload the last JSON report: it often points at Organized or old paths and confuses users who
@@ -409,6 +419,7 @@ def run_serve_server(
     port: int = 8765,
     open_browser: bool = True,
 ) -> None:
+    """Start the serve uvicorn server, optionally opening the dashboard in the system browser."""
     import threading
     import time
     import uvicorn

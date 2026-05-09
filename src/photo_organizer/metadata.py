@@ -45,6 +45,7 @@ _RE_TZ_COMPACT = re.compile(r"([+-])(\d{2})(\d{2})$")
 
 
 def _parse_exif_datetime(s: str | None) -> datetime | None:
+    """Parse an EXIF-style datetime string (e.g. '2024:01:15 12:30:45') to a naive datetime."""
     if not s or not isinstance(s, str):
         return None
     m = _EXIF_DATETIME_RE.match(s.strip())
@@ -58,6 +59,7 @@ def _parse_exif_datetime(s: str | None) -> datetime | None:
 
 
 def _datetime_from_image(path: Path) -> datetime | None:
+    """Extract capture datetime from image EXIF tags via Pillow."""
     try:
         with Image.open(path) as img:
             exif = img.getexif()
@@ -266,8 +268,10 @@ def capture_datetime(path: Path) -> datetime | None:
 
 
 def is_media_file(path: Path) -> bool:
+    """Return True if the file extension is a recognised image or video type."""
     return path.suffix.lower() in _IMAGE_EXTS | _VIDEO_EXTS
 
 
 def is_image_file(path: Path) -> bool:
+    """Return True if the file extension is a recognised image type."""
     return path.suffix.lower() in _IMAGE_EXTS

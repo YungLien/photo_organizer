@@ -42,6 +42,7 @@ def _iter_media_paths(root: Path) -> list[Path]:
 
 
 def file_sha256(path: Path, chunk: int = 1 << 20) -> str:
+    """Return the hex SHA-256 digest of a file read in chunks."""
     h = hashlib.sha256()
     with path.open("rb") as f:
         while True:
@@ -53,10 +54,13 @@ def file_sha256(path: Path, chunk: int = 1 << 20) -> str:
 
 
 class _UnionFind:
+    """Path-compressed union-find for clustering duplicate paths by string key."""
+
     def __init__(self) -> None:
         self._p: dict[str, str] = {}
 
     def find(self, x: str) -> str:
+        """Return the root representative of x, registering it if new."""
         if x not in self._p:
             self._p[x] = x
         if self._p[x] != x:
@@ -64,6 +68,7 @@ class _UnionFind:
         return self._p[x]
 
     def union(self, a: str, b: str) -> None:
+        """Merge the sets containing a and b."""
         ra, rb = self.find(a), self.find(b)
         if ra != rb:
             self._p[rb] = ra
@@ -71,6 +76,8 @@ class _UnionFind:
 
 @dataclass
 class ExactDuplicateGroup:
+    """Group of byte-identical files sharing the same SHA-256 digest."""
+
     sha256: str
     byte_size: int
     paths: list[str]
@@ -78,12 +85,16 @@ class ExactDuplicateGroup:
 
 @dataclass
 class SimilarGroup:
+    """Cluster of perceptually similar images linked by pHash/aHash distance."""
+
     paths: list[str]
     phash_hex: str
 
 
 @dataclass
 class DuplicateScanResult:
+    """Full output of a duplicate scan: exact groups, similar groups, and scan parameters."""
+
     input_dir: str
     generated_at: str
     exact_groups: list[ExactDuplicateGroup] = field(default_factory=list)
@@ -105,6 +116,7 @@ class DuplicateScanResult:
 
 
 def find_exact_duplicates(paths: list[Path]) -> list[ExactDuplicateGroup]:
+    """Group files by SHA-256; return only groups with two or more identical members."""
     by_hash: dict[str, list[Path]] = defaultdict(list)
     sizes: dict[str, int] = {}
     for p in paths:
@@ -145,6 +157,7 @@ def _normalize_for_hash(img: Image.Image, max_edge: int = 512) -> Image.Image:
 
 
 def _stem_prefix_and_serial(path: Path) -> tuple[str, int] | None:
+    """Split a filename stem like 'IMG_0042' into ('img_', 42), or None if no trailing digits."""
     m = _STEM_SERIAL_RE.match(path.stem)
     if not m:
         return None
@@ -427,6 +440,7 @@ def scan_duplicates(
     similar_absorb_max_hamming: int = 32,
     similar_absorb_ahash_max_hamming: int = 22,
 ) -> DuplicateScanResult:
+    """Run exact and/or perceptual-hash duplicate scans on input_dir and return the combined result."""
     input_dir = input_dir.resolve()
     paths = _iter_media_paths(input_dir)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -514,6 +528,7 @@ def scan_duplicates(
 
 
 def result_to_json_dict(r: DuplicateScanResult) -> dict:
+    """Serialise a DuplicateScanResult to a plain dict suitable for JSON output."""
     return {
         "generated_at": r.generated_at,
         "input_dir": r.input_dir,
@@ -537,6 +552,7 @@ def result_to_json_dict(r: DuplicateScanResult) -> dict:
 
 
 def write_report(r: DuplicateScanResult, report_path: Path) -> None:
+    """Write a DuplicateScanResult as a pretty-printed JSON file, creating parent dirs as needed."""
     report_path = report_path.resolve()
     report_path.parent.mkdir(parents=True, exist_ok=True)
     data = result_to_json_dict(r)

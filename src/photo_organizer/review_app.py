@@ -156,6 +156,7 @@ def _move_paths_to_trash(
 
 
 def _append_trash_audit_jsonl(log_path: Path, rows: list[dict[str, str]]) -> None:
+    """Append timestamped trash-action records to a JSONL audit log, creating the file if needed."""
     if not rows:
         return
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -180,6 +181,7 @@ def _review_groups_images_only(groups: list[list[str]]) -> list[list[str]]:
 
 
 def _allowed_from_groups(similar: list[list[str]], exact: list[list[str]]) -> set[str]:
+    """Build the set of NFC-normalised path keys that are in scope for the current review session."""
     allowed: set[str] = set()
     for paths in similar + exact:
         for p in paths:
@@ -190,6 +192,7 @@ def _allowed_from_groups(similar: list[list[str]], exact: list[list[str]]) -> se
 
 
 def _groups_paths(data: dict) -> tuple[list[list[str]], list[list[str]]]:
+    """Extract image-only similar and exact groups from a raw duplicates JSON dict."""
     similar = [list(g.get("paths", [])) for g in data.get("similar_groups", [])]
     exact = [list(g.get("paths", [])) for g in data.get("exact_duplicate_groups", [])]
     return _review_groups_images_only(similar), _review_groups_images_only(exact)
@@ -228,6 +231,7 @@ def _groups_existing_files(groups: list[list[str]]) -> list[list[str]]:
 
 
 def latest_duplicates_json(reports_dir: Path) -> Path | None:
+    """Return the most-recently modified duplicates_*.json in reports_dir, or None if none exist."""
     reports_dir = reports_dir.resolve()
     if not reports_dir.is_dir():
         return None
@@ -265,6 +269,7 @@ class ReviewContext:
         run_organize: bool,
         include_similar_duplicates: bool = True,
     ) -> None:
+        """Cache the last pipeline settings so the dashboard can pre-fill the form on reload."""
         self.last_input_dir = input_dir.strip()
         self.last_organized_root = (organized_root or "Organized").strip() or "Organized"
         self.last_copy_files = copy_files
@@ -422,6 +427,7 @@ def mount_review_routes(
 
 
 def create_review_app(report_path: Path, *, quarantine_root: Path | None = None) -> FastAPI:
+    """Build a standalone FastAPI app for reviewing a single duplicates JSON report."""
     report_path = report_path.resolve()
     if not report_path.is_file():
         raise FileNotFoundError(report_path)
@@ -452,6 +458,7 @@ def run_review_server(
     port: int = 8765,
     quarantine_root: Path | None = None,
 ) -> None:
+    """Start the duplicate-review uvicorn server and block until it exits."""
     import uvicorn
 
     app = create_review_app(report_path, quarantine_root=quarantine_root)
@@ -459,6 +466,7 @@ def run_review_server(
 
 
 def create_screenshot_review_app(scan_dir: Path, *, quarantine_root: Path | None = None) -> FastAPI:
+    """Build a standalone FastAPI app for reviewing likely screenshots found under scan_dir."""
     from photo_organizer.screenshots import scan_screenshots_folder
 
     scan_dir = scan_dir.resolve()
@@ -546,6 +554,7 @@ def run_screenshot_review_server(
     port: int = 8765,
     quarantine_root: Path | None = None,
 ) -> None:
+    """Start the screenshot-review uvicorn server and block until it exits."""
     import uvicorn
 
     app = create_screenshot_review_app(scan_dir, quarantine_root=quarantine_root)

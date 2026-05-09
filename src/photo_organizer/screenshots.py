@@ -21,6 +21,8 @@ _SCREENSHOT_NAME_RE = re.compile(
 
 @dataclass
 class ScreenshotHit:
+    """A single image identified as a likely screenshot, with its detection reason and dimensions."""
+
     path: str
     reason: str
     width: int
@@ -58,6 +60,7 @@ def screenshot_reason(path: Path) -> str | None:
 
 
 def is_screenshot_candidate(path: Path) -> bool:
+    """Return True if the file matches any screenshot heuristic (filename or PNG shape)."""
     return screenshot_reason(path) is not None
 
 
@@ -75,6 +78,7 @@ def is_screenshot_name_match(path: Path) -> bool:
 
 
 def iter_screenshot_hits(root: Path) -> list[ScreenshotHit]:
+    """Walk root recursively and return ScreenshotHit records for all likely screenshots found."""
     root = root.resolve()
     if not root.is_dir():
         return []
@@ -98,6 +102,7 @@ def iter_screenshot_hits(root: Path) -> list[ScreenshotHit]:
 
 
 def write_screenshots_report(hits: list[ScreenshotHit], out_path: Path, *, input_dir: Path) -> None:
+    """Serialise screenshot scan results to a timestamped JSON file at out_path."""
     out_path = out_path.resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -110,4 +115,5 @@ def write_screenshots_report(hits: list[ScreenshotHit], out_path: Path, *, input
 
 
 def scan_screenshots_folder(input_dir: Path) -> list[ScreenshotHit]:
+    """Return all screenshot candidates under input_dir (thin wrapper over iter_screenshot_hits)."""
     return iter_screenshot_hits(input_dir)
