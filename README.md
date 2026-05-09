@@ -65,7 +65,10 @@ Use **`photo-organizer <command> --help`** for all flags (e.g. `--move`, `--no-s
 | Path | Purpose |
 |------|---------|
 | `src/photo_organizer/` | Application code |
+| `tests/` | pytest test suite |
 | `macOS/Photo Organizer.app` | macOS launcher for the web app |
+| `assets/` | App icon source files (`AppIcon.icns`, `photo_organizer_icon.png`) |
+| `scripts/` | `Photo Organizer.command` (double-click launcher); `generate_app_icon.py` (regenerate icons) |
 | `Reports/` | Generated `duplicates_*.json` (gitignored except `.gitkeep`) |
 | `Organized/` | CLI default output when you use `-o Organized` (gitignored) |
 
