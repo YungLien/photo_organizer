@@ -1,6 +1,6 @@
 # Photo Organizer
 
-**Local-first** tool for macOS: sort photos/videos by date into month folders, find duplicate and similar images, and review them in a **browser** (nothing is uploaded to the cloud). Licensed under **[MIT](LICENSE)**.
+**Local-first** tool for macOS: sort photos/videos by date into month folders, find duplicate and similar images, and review them in a **browser** (nothing is uploaded to the cloud).
 
 **Requirements:** macOS (primary), **Python 3.11+**. Optional: **ffprobe** on `PATH` for better video dates.
 
@@ -84,8 +84,3 @@ Use **`photo-organizer <command> --help`** for all flags (e.g. `--move`, `--no-s
 | **Wrong folder remembered** | `rm -f ~/Library/Application\ Support/PhotoOrganizer/repo_path` and launch the `.app` again. |
 | **Duplicate / similar** | Review lists **images only** on the web UI; videos are not shown in those tiles. Similar detection uses perceptual hashes; very different shots may not cluster. |
 
----
-
-## License
-
-[MIT](LICENSE)
