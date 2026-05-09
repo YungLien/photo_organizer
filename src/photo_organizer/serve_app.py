@@ -76,6 +76,16 @@ def _path_for_pipeline_form(project_root: Path, chosen: Path) -> str:
         return str(chosen)
 
 
+def _prewarm_osascript() -> None:
+    """Run a no-op AppleScript to pre-load the runtime, eliminating cold-start delay on first Browse click."""
+    if platform.system() != "Darwin":
+        return
+    try:
+        subprocess.run(["osascript", "-e", "return"], capture_output=True, timeout=10)
+    except Exception:
+        pass
+
+
 def _pick_folder_macos_sync(prompt: str) -> str:
     """
     Block until the user picks a folder or cancels (Finder dialog via AppleScript).
@@ -243,6 +253,7 @@ def _prune_jobs() -> None:
 def create_serve_app(project_root: Path) -> FastAPI:
     """Build the unified FastAPI app with dashboard, pipeline, and duplicate-review routes."""
     project_root = project_root.resolve()
+    threading.Thread(target=_prewarm_osascript, daemon=True).start()
     ctx = ReviewContext()
     # Do not preload the last JSON report: it often points at Organized or old paths and confuses users who
     # replaced their import folder. Review stays empty until a successful pipeline run.

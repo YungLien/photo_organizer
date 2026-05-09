@@ -164,6 +164,34 @@ def _stem_prefix_and_serial(path: Path) -> tuple[str, int] | None:
     return m.group(1).lower(), int(m.group(2))
 
 
+_HashCache = dict[str, tuple["imagehash.ImageHash", "imagehash.ImageHash"]]
+
+
+def _compute_image_hashes(paths: list[Path]) -> tuple[_HashCache, list[dict[str, str]]]:
+    """Open every image once and compute pHash + aHash; return the shared cache and any errors."""
+    cache: _HashCache = {}
+    skipped: list[dict[str, str]] = []
+    for p in paths:
+        if not is_image_file(p):
+            continue
+        key = str(p)
+        try:
+            with Image.open(p) as img:
+                img = ImageOps.exif_transpose(img)
+                img = img.convert("RGB")
+                img = _normalize_for_hash(img)
+                hp = imagehash.phash(img)
+                ha = imagehash.average_hash(img)
+        except OSError as e:
+            skipped.append({"path": key, "reason": f"open_error:{e}"})
+            continue
+        except Exception as e:
+            skipped.append({"path": key, "reason": f"hash_error:{e}"})
+            continue
+        cache[key] = (hp, ha)
+    return cache, skipped
+
+
 def _pair_similar_global(
     dp: int,
     da: int,
@@ -211,6 +239,7 @@ def _pair_similar_serial(
 def find_similar_groups(
     paths: list[Path],
     *,
+    hash_cache: _HashCache | None = None,
     max_hamming_phash: int = 14,
     max_hamming_ahash: int = 18,
     serial_max_gap: int = 0,
@@ -230,6 +259,11 @@ def find_similar_groups(
     for p in paths:
         if not is_image_file(p):
             continue
+        key = str(p)
+        if hash_cache is not None and key in hash_cache:
+            hp, ha = hash_cache[key]
+            items.append((key, hp, ha))
+            continue
         try:
             with Image.open(p) as img:
                 img = ImageOps.exif_transpose(img)
@@ -238,12 +272,12 @@ def find_similar_groups(
                 hp = imagehash.phash(img)
                 ha = imagehash.average_hash(img)
         except OSError as e:
-            skipped.append({"path": str(p), "reason": f"open_error:{e}"})
+            skipped.append({"path": key, "reason": f"open_error:{e}"})
             continue
         except Exception as e:
-            skipped.append({"path": str(p), "reason": f"hash_error:{e}"})
+            skipped.append({"path": key, "reason": f"hash_error:{e}"})
             continue
-        items.append((str(p), hp, ha))
+        items.append((key, hp, ha))
 
     uf = _UnionFind()
     n = len(items)
@@ -313,6 +347,7 @@ def _absorb_serial_neighbors(
     serial_max_gap: int,
     max_phash: int,
     max_ahash: int,
+    hash_cache: _HashCache | None = None,
 ) -> None:
     """In-place: absorb ungrouped files into existing groups via serial filename proximity.
 
@@ -337,13 +372,12 @@ def _absorb_serial_neighbors(
                 meta.append((p_str, sinfo[0], sinfo[1]))
         group_serial.append(meta)
 
-    # Compute hashes for ungrouped files and cache
-    hash_cache: dict[str, tuple[imagehash.ImageHash, imagehash.ImageHash]] = {}
+    _cache: _HashCache = hash_cache if hash_cache is not None else {}
 
     def _hash(p: Path) -> tuple[imagehash.ImageHash, imagehash.ImageHash] | None:
         key = str(p)
-        if key in hash_cache:
-            return hash_cache[key]
+        if key in _cache:
+            return _cache[key]
         try:
             with Image.open(p) as img:
                 img = ImageOps.exif_transpose(img).convert("RGB")
@@ -352,7 +386,7 @@ def _absorb_serial_neighbors(
                 ha = imagehash.average_hash(img)
         except Exception:
             return None
-        hash_cache[key] = (hp, ha)
+        _cache[key] = (hp, ha)
         return hp, ha
 
     # Pre-warm hashes for ungrouped files
@@ -370,7 +404,7 @@ def _absorb_serial_neighbors(
         changed = False
         remaining = [(p_str, pfx, ser) for p_str, pfx, ser in ungrouped_items if p_str in ungrouped_set]
         for up_str, u_pfx, u_ser in remaining:
-            uh = hash_cache.get(up_str)
+            uh = _cache.get(up_str)
             if uh is None:
                 continue
             uhp, uha = uh
@@ -474,8 +508,13 @@ def scan_duplicates(
                     filtered.append(p)
             image_paths = filtered
         result.similar_excluded_screenshots = excluded
+
+        # Compute pHash + aHash for every image once; all three passes below reuse this cache.
+        shared_hashes, hash_skipped = _compute_image_hashes(image_paths)
+
         sim, skipped = find_similar_groups(
             image_paths,
+            hash_cache=shared_hashes,
             max_hamming_phash=similar_max_hamming,
             max_hamming_ahash=similar_ahash_max_hamming,
             serial_max_gap=similar_serial_max_gap,
@@ -486,7 +525,7 @@ def scan_duplicates(
             ahash_loose=similar_ahash_loose,
         )
         result.similar_groups = filter_similar_against_exact(sim, result.exact_groups)
-        result.similar_skipped = skipped
+        result.similar_skipped = hash_skipped + skipped
 
         # Second pass: run wider thresholds on files not yet in any group.
         # This catches near-miss pairs (e.g. pHash 15-24) without transitively
@@ -498,6 +537,7 @@ def scan_duplicates(
             if len(ungrouped) >= 2:
                 wide_sim, wide_skipped = find_similar_groups(
                     ungrouped,
+                    hash_cache=shared_hashes,
                     max_hamming_phash=similar_wide_max_hamming,
                     max_hamming_ahash=similar_wide_ahash_max_hamming,
                     match_mode=similar_match_mode,
@@ -523,6 +563,7 @@ def scan_duplicates(
                 serial_max_gap=1,
                 max_phash=similar_absorb_max_hamming,
                 max_ahash=similar_absorb_ahash_max_hamming,
+                hash_cache=shared_hashes,
             )
     return result
 
