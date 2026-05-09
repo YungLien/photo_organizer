@@ -17,8 +17,15 @@ build/
 .vscode/
 *.swp
 
-# Local import folder (your own media — never commit)
+# Local import folders (your own media — never commit)
 photos/
+pastphotos/
+
+# Claude Code worktrees and session data
+.claude/
+
+# Alternate frontend experiments
+frontend/
 
 # Project outputs (track empty dirs with .gitkeep only)
 Organized/*
