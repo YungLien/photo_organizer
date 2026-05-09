@@ -30,7 +30,7 @@ Opens **http://127.0.0.1:8765/** — pick an **import folder** (path or **Browse
 
 **Important:** The import folder should be **only** that batch of photos (e.g. `photos`). **Do not** use the project root or `.` as import — the scan would include `.venv/`, `src/`, etc.
 
-**Why it’s not instant:** the app copies and scans on disk; the UI uses a background job (`job_id` + polling) so the browser does not freeze.
+**Why it’s not instant:** the app copies and scans on disk; the browser stays responsive while it works in the background.
 
 ---
 
@@ -42,7 +42,6 @@ In **`macOS/`**, double-click **`Photo Organizer.app`** to start the server and 
 - If Gatekeeper blocks the app: **right-click → Open**, or run `xattr -cr "macOS/Photo Organizer.app"` from the repo root.
 - If you see **“server did not start”**: read `~/Library/Application Support/PhotoOrganizer/serve.log`. On Apple Silicon, turn off **Open using Rosetta** in **Get Info** on the `.app`, or use the current `Contents/Resources/common.sh` from this repo (it runs `serve` under **`arch -arm64`** when needed).
 
-Optional: **`scripts/Photo Organizer.command`** (`chmod +x`) starts `serve` from Terminal as an alternative to the `.app`.
 
 ---
 
@@ -67,11 +66,8 @@ Use **`photo-organizer <command> --help`** for all flags (e.g. `--move`, `--no-s
 | `src/photo_organizer/` | Application code |
 | `tests/` | pytest test suite |
 | `macOS/Photo Organizer.app` | macOS launcher for the web app |
-| `scripts/` | `Photo Organizer.command` — double-click launcher (alternative to the `.app`) |
+| `scripts/` | `Photo Organizer.command` — Terminal launcher (alternative to the `.app`) |
 | `Reports/` | Generated `duplicates_*.json` (gitignored except `.gitkeep`) |
-| `Organized/` | CLI default output when you use `-o Organized` (gitignored) |
-
-`~/Desktop/Organized` is the **fixed output** when using **`serve`**, not the repo’s `Organized/` folder.
 
 ---
 
