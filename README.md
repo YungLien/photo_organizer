@@ -42,7 +42,7 @@ In **`macOS/`**, double-click **`Photo Organizer.app`** to start the server and 
 - If Gatekeeper blocks the app: **right-click → Open**, or run `xattr -cr "macOS/Photo Organizer.app"` from the repo root.
 - If you see **“server did not start”**: read `~/Library/Application Support/PhotoOrganizer/serve.log`. On Apple Silicon, turn off **Open using Rosetta** in **Get Info** on the `.app`, or use the current `Contents/Resources/common.sh` from this repo (it runs `serve` under **`arch -arm64`** when needed).
 
-Optional: **`scripts/Photo Organizer.command`** (`chmod +x`) starts `serve` from Terminal. Regenerate icons: `python scripts/generate_app_icon.py`.
+Optional: **`scripts/Photo Organizer.command`** (`chmod +x`) starts `serve` from Terminal as an alternative to the `.app`.
 
 ---
 
@@ -67,8 +67,7 @@ Use **`photo-organizer <command> --help`** for all flags (e.g. `--move`, `--no-s
 | `src/photo_organizer/` | Application code |
 | `tests/` | pytest test suite |
 | `macOS/Photo Organizer.app` | macOS launcher for the web app |
-| `assets/` | App icon source files (`AppIcon.icns`, `photo_organizer_icon.png`) |
-| `scripts/` | `Photo Organizer.command` (double-click launcher); `generate_app_icon.py` (regenerate icons) |
+| `scripts/` | `Photo Organizer.command` — double-click launcher (alternative to the `.app`) |
 | `Reports/` | Generated `duplicates_*.json` (gitignored except `.gitkeep`) |
 | `Organized/` | CLI default output when you use `-o Organized` (gitignored) |
 
